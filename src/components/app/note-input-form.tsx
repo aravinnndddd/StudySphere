@@ -7,8 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Sparkles, LoaderCircle, Upload } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Set up the worker to be loaded from a CDN
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
+// Set up the worker to be loaded from a CDN. Use the mjs build for modern bundlers.
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.mjs`;
 
 type NoteInputFormProps = {
   onSubmit: (notes: string) => void;
