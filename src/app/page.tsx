@@ -14,10 +14,10 @@ export default function Home() {
   const [studyPlan, setStudyPlan] = useState<StudyPlan | null>(null);
   const { toast } = useToast();
 
-  const handleGenerate = async (notes: string) => {
+  const handleGenerate = async (summary: string, fullNotes: string) => {
     setIsLoading(true);
     setStudyPlan(null);
-    const result = await generateStudyPlan(notes);
+    const result = await generateStudyPlan({ fullNotes, summary });
     if (result.success && result.data) {
       setStudyPlan(result.data);
     } else {

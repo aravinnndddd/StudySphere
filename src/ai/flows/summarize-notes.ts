@@ -1,4 +1,3 @@
-// Summarize notes flow implemented.
 'use server';
 
 /**
@@ -32,7 +31,9 @@ const prompt = ai.definePrompt({
   name: 'summarizeNotesPrompt',
   input: {schema: SummarizeNotesInputSchema},
   output: {schema: SummarizeNotesOutputSchema},
-  prompt: `You are an expert summarizer. Please summarize the following lecture notes into concise bullet points.\n\nNotes: {{{notes}}}`,
+  prompt: `You are an expert in creating structured study materials. Summarize the following notes by identifying the main topics and key concepts. Present the summary as a series of headings with nested bullet points underneath. This structure will be used to generate a more detailed study guide. Ensure the output is clear, logical, and captures the essence of the original notes.
+
+Notes: {{{notes}}}`,
 });
 
 const summarizeNotesFlow = ai.defineFlow(

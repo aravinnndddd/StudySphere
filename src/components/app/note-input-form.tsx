@@ -6,31 +6,57 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Sparkles, LoaderCircle, Upload } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
+import { summarizeForDisplay } from '@/app/actions';
+import { useToast } from '@/hooks/use-toast';
 
 // Set up the worker to be loaded from a CDN. Use the mjs build for modern bundlers.
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.mjs`;
 
 type NoteInputFormProps = {
-  onSubmit: (notes: string) => void;
+  onSubmit: (summary: string, fullNotes: string) => void;
   isLoading: boolean;
 };
 
 export function NoteInputForm({ onSubmit, isLoading }: NoteInputFormProps) {
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState(''); // This will hold the summary or pasted notes
+  const [originalNotes, setOriginalNotes] = useState(''); // Holds full text from file
   const [isParsing, setIsParsing] = useState(false);
+  const [isSummarizing, setIsSummarizing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    onSubmit(notes);
+    onSubmit(notes, originalNotes || notes);
   };
-  
+
+  const processExtractedText = async (text: string) => {
+    setOriginalNotes(text);
+    setIsParsing(false);
+    setIsSummarizing(true);
+    setNotes('Summarizing content, this may take a moment...');
+
+    const result = await summarizeForDisplay(text);
+    if (result.success) {
+      setNotes(result.data);
+    } else {
+      setNotes(result.data); // Fallback to original text on error
+      toast({
+        variant: 'destructive',
+        title: 'Summarization Failed',
+        description: result.error || 'Could not summarize the document. Using full text.',
+      });
+    }
+    setIsSummarizing(false);
+  };
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setIsParsing(true);
-    setNotes('');
+    setNotes('Parsing file...');
+    setOriginalNotes('');
 
     try {
       if (file.type === 'application/pdf') {
@@ -38,7 +64,8 @@ export function NoteInputForm({ onSubmit, isLoading }: NoteInputFormProps) {
         reader.onload = async (event) => {
           if (!event.target?.result) {
             setIsParsing(false);
-            console.error("File reading failed.");
+            setNotes('');
+            toast({ variant: 'destructive', title: 'Error', description: 'File reading failed.' });
             return;
           }
           try {
@@ -51,37 +78,38 @@ export function NoteInputForm({ onSubmit, isLoading }: NoteInputFormProps) {
               const pageText = textContent.items.map((item: any) => item.str).join(' ');
               fullText += pageText + '\n\n';
             }
-            setNotes(fullText.trim());
+            await processExtractedText(fullText.trim());
           } catch (error) {
             console.error('Error parsing PDF:', error);
-          } finally {
+            setNotes('');
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not parse the PDF file.' });
             setIsParsing(false);
           }
         };
         reader.readAsArrayBuffer(file);
       } else {
-        // Handle text-based files
         const reader = new FileReader();
-        reader.onload = (event) => {
+        reader.onload = async (event) => {
           const text = event.target?.result as string;
-          setNotes(text);
-          setIsParsing(false);
+          await processExtractedText(text);
         };
         reader.readAsText(file);
       }
     } catch (error) {
-      console.error("Failed to read file", error);
+      console.error('Failed to read file', error);
+      setNotes('');
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to read file.' });
       setIsParsing(false);
     }
   };
-
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
 
-  const uploadButtonDisabled = isLoading || isParsing;
-  const generateButtonDisabled = isLoading || isParsing || !notes;
+  const uploadButtonDisabled = isLoading || isParsing || isSummarizing;
+  const generateButtonDisabled = isLoading || isParsing || isSummarizing || !notes;
+  const currentStatus = isParsing ? 'Parsing...' : isSummarizing ? 'Summarizing...' : 'Upload File';
 
   return (
     <Card className="w-full max-w-4xl mx-auto shadow-lg border-primary/20">
@@ -91,17 +119,20 @@ export function NoteInputForm({ onSubmit, isLoading }: NoteInputFormProps) {
           Create Your Study Plan
         </CardTitle>
         <CardDescription>
-          Paste your notes below, or upload a text or PDF file. We'll generate your personalized study materials.
+          Paste your notes, or upload a file. We'll summarize it for you to review before generating your study materials.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Textarea
-            placeholder="Paste your extensive class notes, book chapters, or any study material here..."
+            placeholder="Paste your notes here, or upload a file to have it summarized automatically..."
             value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            onChange={(e) => {
+              setNotes(e.target.value);
+              setOriginalNotes('');
+            }}
             className="min-h-[250px] text-base"
-            disabled={isLoading || isParsing}
+            disabled={isLoading || isParsing || isSummarizing}
           />
            <input
               type="file"
@@ -112,15 +143,15 @@ export function NoteInputForm({ onSubmit, isLoading }: NoteInputFormProps) {
             />
           <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
             <Button type="button" variant="outline" onClick={handleUploadClick} disabled={uploadButtonDisabled} className="w-full sm:w-auto">
-              {isParsing ? (
+              {isParsing || isSummarizing ? (
                 <>
                   <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                  Parsing...
+                  {currentStatus}
                 </>
               ) : (
                 <>
                   <Upload className="mr-2 h-4 w-4" />
-                  Upload File
+                  {currentStatus}
                 </>
               )}
             </Button>
