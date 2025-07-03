@@ -1,0 +1,59 @@
+'use server';
+
+/**
+ * @fileOverview A flow to generate application-based questions from notes and extract solutions from external sources.
+ *
+ * - generateApplicationQuestions - A function that handles the generation of application questions and solution extraction.
+ * - GenerateApplicationQuestionsInput - The input type for the generateApplicationQuestions function.
+ * - GenerateApplicationQuestionsOutput - The return type for the generateApplicationQuestions function.
+ */
+
+import {ai} from '@/ai/genkit';
+import {z} from 'genkit';
+
+const GenerateApplicationQuestionsInputSchema = z.object({
+  notes: z.string().describe('The notes to generate questions from.'),
+  numQuestions: z.number().default(3).describe('The number of questions to generate.'),
+});
+export type GenerateApplicationQuestionsInput = z.infer<typeof GenerateApplicationQuestionsInputSchema>;
+
+const GenerateApplicationQuestionsOutputSchema = z.object({
+  questions: z.array(
+    z.object({
+      question: z.string().describe('The application-based question.'),
+      solution: z.string().describe('The solution to the question, extracted from external sources.'),
+      source: z.string().optional().describe('The source URL of the solution.'),
+    })
+  ).describe('The generated application-based questions and their solutions.'),
+});
+export type GenerateApplicationQuestionsOutput = z.infer<typeof GenerateApplicationQuestionsOutputSchema>;
+
+export async function generateApplicationQuestions(input: GenerateApplicationQuestionsInput): Promise<GenerateApplicationQuestionsOutput> {
+  return generateApplicationQuestionsFlow(input);
+}
+
+const questionPrompt = ai.definePrompt({
+  name: 'applicationQuestionPrompt',
+  input: {schema: GenerateApplicationQuestionsInputSchema},
+  output: {schema: GenerateApplicationQuestionsOutputSchema},
+  prompt: `You are an expert in generating application-based questions from study notes. Your task is to create questions that test the user's understanding of how to apply the concepts in the notes. For each question, you will also extract a solution from credible online sources and provide the source URL.
+
+Notes: {{{notes}}}
+
+Number of questions to generate: {{{numQuestions}}}
+
+Format your response as a JSON object matching the following schema:
+${JSON.stringify(GenerateApplicationQuestionsOutputSchema.describe, null, 2)}`,
+});
+
+const generateApplicationQuestionsFlow = ai.defineFlow(
+  {
+    name: 'generateApplicationQuestionsFlow',
+    inputSchema: GenerateApplicationQuestionsInputSchema,
+    outputSchema: GenerateApplicationQuestionsOutputSchema,
+  },
+  async input => {
+    const {output} = await questionPrompt(input);
+    return output!;
+  }
+);
