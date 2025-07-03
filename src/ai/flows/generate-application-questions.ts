@@ -21,7 +21,7 @@ const GenerateApplicationQuestionsOutputSchema = z.object({
   questions: z.array(
     z.object({
       question: z.string().describe('The application-based question.'),
-      solution: z.string().describe('The solution to the question, extracted from external sources.'),
+      solution: z.string().describe('The solution to the question, explained in a friendly, academic tone.'),
       source: z.string().optional().describe('The source URL of the solution.'),
     })
   ).describe('The generated application-based questions and their solutions.'),
@@ -36,13 +36,19 @@ const questionPrompt = ai.definePrompt({
   name: 'applicationQuestionPrompt',
   input: {schema: GenerateApplicationQuestionsInputSchema},
   output: {schema: GenerateApplicationQuestionsOutputSchema},
-  prompt: `You are an expert in generating application-based questions from study notes. Your task is to create questions that test the user's understanding of how to apply the concepts in the notes. For each question, you will also extract a solution from credible online sources and provide the source URL.
+  prompt: `You are an expert in generating application-based questions from study notes. Your task is to create questions that test the user's understanding of how to apply the concepts in the notes.
+
+For each question, you will also provide a detailed solution. When writing the solution, please follow these guidelines:
+- Adopt a friendly and academic tone, like a teacher explaining the answer step-by-step.
+- Use headings or bold text to structure the explanation if it has multiple parts.
+- Explain the reasoning clearly.
+- If possible, extract the solution from a credible online source and provide the source URL.
 
 Notes: {{{notes}}}
 
 Number of questions to generate: {{{numQuestions}}}
 
-Format your response as a JSON object matching the following schema:
+Important: You MUST format your entire response as a single JSON object that strictly matches the following schema. Do not include any text outside of this JSON object.
 ${JSON.stringify(GenerateApplicationQuestionsOutputSchema.describe, null, 2)}`,
 });
 

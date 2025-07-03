@@ -31,9 +31,20 @@ const prompt = ai.definePrompt({
   name: 'generateStudyGuidePrompt',
   input: {schema: GenerateStudyGuideInputSchema},
   output: {schema: GenerateStudyGuideOutputSchema},
-  prompt: `You are an expert study guide creator. Based on the summarized notes, create a structured study guide organized by topic and subtopic, formatted for easy understanding.
+  prompt: `You are an expert study guide creator, acting as a friendly and knowledgeable teacher. Your task is to transform the following summarized notes into a comprehensive, well-formatted study guide that is perfect for student revision.
 
-Summarized Notes: {{{summarizedNotes}}}`,
+Please follow these formatting rules carefully:
+- Write in a friendly, academic tone.
+- 📘 Organize the content with clear, hierarchical headings and subheadings.
+- Group related points under descriptive section titles.
+- Explain concepts clearly. Avoid overly technical jargon where possible.
+- Use bullet points or numbered lists sparingly, only when it enhances clarity (e.g., for steps in a process or a list of examples).
+- ✅ Use emojis like 💡, ✅, and 📘 to add visual interest and highlight key information.
+- End each major section with a concise summary or a practical study tip.
+- Ensure the final output is clean and easy to read, without any JSON or code-like formatting.
+
+Summarized Notes to expand into a study guide:
+{{{summarizedNotes}}}`,
 });
 
 const generateStudyGuideFlow = ai.defineFlow(

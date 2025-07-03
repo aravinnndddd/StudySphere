@@ -19,7 +19,7 @@ const SummarizeNotesInputSchema = z.object({
 export type SummarizeNotesInput = z.infer<typeof SummarizeNotesInputSchema>;
 
 const SummarizeNotesOutputSchema = z.object({
-  summary: z.string().describe('The summarized notes in concise bullet points.'),
+  summary: z.string().describe('The summarized notes in a friendly, well-formatted structure.'),
 });
 export type SummarizeNotesOutput = z.infer<typeof SummarizeNotesOutputSchema>;
 
@@ -31,9 +31,21 @@ const prompt = ai.definePrompt({
   name: 'summarizeNotesPrompt',
   input: {schema: SummarizeNotesInputSchema},
   output: {schema: SummarizeNotesOutputSchema},
-  prompt: `You are an expert in creating structured study materials. Summarize the following notes by identifying the main topics and key concepts. Present the summary as a series of headings with nested bullet points underneath. This structure will be used to generate a more detailed study guide. Ensure the output is clear, logical, and captures the essence of the original notes.
+  prompt: `You are an expert in creating structured study materials. Your goal is to summarize the provided notes into a clear, engaging, and easy-to-digest format for a student.
 
-Notes: {{{notes}}}`,
+Please adhere to the following guidelines for your output:
+- Adopt a friendly and academic tone, like a helpful teacher.
+- Use clear headings and subheadings to structure the content.
+- Group related concepts into logical sections.
+- Use bullet points only when necessary for lists of items.
+- 📘 Use emojis to add visual cues and break up the text.
+- 💡 At the end of each major section, provide a one-line summary or a helpful tip.
+- Do not use JSON or code-like formatting.
+
+The goal is to create a preliminary summary that is well-formatted and ready for a student to review before generating a more detailed study plan.
+
+Notes to summarize:
+{{{notes}}}`,
 });
 
 const summarizeNotesFlow = ai.defineFlow(
