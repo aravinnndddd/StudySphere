@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sparkles, LoaderCircle } from 'lucide-react';
+import { Sparkles, LoaderCircle, Upload } from 'lucide-react';
 
 type NoteInputFormProps = {
   onSubmit: (notes: string) => void;
@@ -13,10 +13,27 @@ type NoteInputFormProps = {
 
 export function NoteInputForm({ onSubmit, isLoading }: NoteInputFormProps) {
   const [notes, setNotes] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onSubmit(notes);
+  };
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const text = event.target?.result as string;
+        setNotes(text);
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
   };
 
   return (
@@ -27,7 +44,7 @@ export function NoteInputForm({ onSubmit, isLoading }: NoteInputFormProps) {
           Create Your Study Plan
         </CardTitle>
         <CardDescription>
-          Paste your notes below, and we'll generate your personalized study materials.
+          Paste your notes below, or upload a text file. We'll generate your personalized study materials.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -38,18 +55,30 @@ export function NoteInputForm({ onSubmit, isLoading }: NoteInputFormProps) {
             onChange={(e) => setNotes(e.target.value)}
             className="min-h-[250px] text-base"
             disabled={isLoading}
-            required
           />
-          <Button type="submit" className="w-full" disabled={isLoading || !notes}>
-            {isLoading ? (
-              <>
-                <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                Generating...
-              </>
-            ) : (
-              'Generate Study Plan'
-            )}
-          </Button>
+           <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              className="hidden"
+              accept=".txt,.md"
+            />
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+            <Button type="button" variant="outline" onClick={handleUploadClick} disabled={isLoading} className="w-full sm:w-auto">
+              <Upload className="mr-2 h-4 w-4" />
+              Upload File
+            </Button>
+            <Button type="submit" className="w-full sm:w-auto" disabled={isLoading || !notes}>
+              {isLoading ? (
+                <>
+                  <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                'Generate Study Plan'
+              )}
+            </Button>
+          </div>
         </form>
       </CardContent>
     </Card>
