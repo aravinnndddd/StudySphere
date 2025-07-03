@@ -34,6 +34,7 @@ import { Flashcard } from '@/components/app/flashcard';
 import { Feedback } from '@/components/app/feedback';
 import type { StudyPlan } from '@/lib/types';
 import { Skeleton } from '../ui/skeleton';
+import { MarkdownRenderer } from './markdown-renderer';
 
 type StudyDashboardProps = {
   isLoading: boolean;
@@ -83,15 +84,15 @@ export function StudyDashboard({ isLoading, data }: StudyDashboardProps) {
                 {!isLoading && data && (
                     <>
                     <TabsContent value="summary">
-                        <ScrollArea className="h-[60vh] rounded-md border p-4 font-mono text-sm whitespace-pre-wrap">
-                            {data.summary.summary}
+                        <ScrollArea className="h-[60vh] rounded-md border p-6">
+                            <MarkdownRenderer content={data.summary.summary} />
                         </ScrollArea>
                         <Feedback />
                     </TabsContent>
 
                     <TabsContent value="study-guide">
-                        <ScrollArea className="h-[60vh] rounded-md border p-4 font-mono text-sm whitespace-pre-wrap">
-                            {data.studyGuide.studyGuide}
+                        <ScrollArea className="h-[60vh] rounded-md border p-6">
+                            <MarkdownRenderer content={data.studyGuide.studyGuide} />
                         </ScrollArea>
                         <Feedback />
                     </TabsContent>
