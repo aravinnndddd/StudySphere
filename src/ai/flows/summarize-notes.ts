@@ -31,21 +31,34 @@ const prompt = ai.definePrompt({
   name: 'summarizeNotesPrompt',
   input: {schema: SummarizeNotesInputSchema},
   output: {schema: SummarizeNotesOutputSchema},
-  prompt: `You are an expert in creating structured study materials. Your goal is to summarize the provided notes into a clear, engaging, and easy-to-digest format for a student.
+  prompt: `You are an intelligent study assistant.
 
-Please adhere to the following guidelines for your output:
-- Adopt a friendly and academic tone, like a helpful teacher.
-- Use clear headings and subheadings to structure the content.
-- Group related concepts into logical sections.
-- Use bullet points only when necessary for lists of items.
-- 📘 Use emojis to add visual cues and break up the text.
-- 💡 At the end of each major section, provide a one-line summary or a helpful tip.
-- Do not use JSON or code-like formatting.
+Your job is to read through the provided study material or class notes and generate a clear, structured summary that is:
+- Easy to understand for students of all levels
+- Organized in bullet points
+- Includes key concepts and important formulas
+- Mentions external references or study materials if needed
+- Keeps the tone concise, helpful, and student-friendly
 
-The goal is to create a preliminary summary that is well-formatted and ready for a student to review before generating a more detailed study plan.
+=== NOTES START ===
+{{{notes}}}
+=== NOTES END ===
 
-Notes to summarize:
-{{{notes}}}`,
+Format your response exactly like this:
+
+📌 **Key Concepts:**
+- Point 1
+- Point 2
+- ...
+
+🧮 **Important Formulas:**
+- Formula Name: Formula here (with explanation if needed)
+- ...
+
+🔗 **References (if any):**
+- [Title](link) – short description
+
+Make sure the summary is not too long and avoids repeating the original text. Focus on clarity, structure, and helpfulness.`,
 });
 
 const summarizeNotesFlow = ai.defineFlow(
