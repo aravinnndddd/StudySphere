@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { Header } from '@/components/app/header';
+import 'katex/dist/katex.min.css';
 
 export const metadata: Metadata = {
   title: 'StudySphere',
@@ -22,6 +23,7 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Code+Pro&display=swap"
           rel="stylesheet"
         />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0KOVwNw43InterQaZnDDRWzI unusAmdFnoPaOUbSiMld/flE/qt2rzP9SLLTUNHIU" crossOrigin="anonymous" />
       </head>
       <body className="font-body antialiased min-h-screen flex flex-col">
         <Header />

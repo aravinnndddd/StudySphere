@@ -42,6 +42,8 @@ For each question, you will also provide a detailed solution. When writing the s
 - Adopt a friendly and academic tone, like a teacher explaining the answer step-by-step.
 - Use headings or bold text to structure the explanation if it has multiple parts.
 - Explain the reasoning clearly.
+- When providing code examples, enclose them in markdown code fences with the language identifier (e.g., \`\`\`javascript ... \`\`\`).
+- For mathematical formulas, use LaTeX syntax enclosed in double dollar signs for blocks (e.g., $$ E=mc^2 $$) or single dollar signs for inline math (e.g., $ y = mx + b $).
 - If possible, extract the solution from a credible online source and provide the source URL.
 
 Notes: {{{notes}}}

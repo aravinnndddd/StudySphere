@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '../ui/scroll-area';
+import { MarkdownRenderer } from './markdown-renderer';
 
 type FlashcardProps = {
   question: string;
@@ -44,7 +45,7 @@ export function Flashcard({ question, solution }: FlashcardProps) {
         >
           <Card className="w-full h-full flex flex-col justify-between">
             <CardContent className="p-6 flex-1 flex items-center justify-center">
-                <ScrollArea className="h-[220px]">
+                <ScrollArea className="h-[220px] w-full">
                     <p className="text-center text-lg">{question}</p>
                 </ScrollArea>
             </CardContent>
@@ -63,9 +64,11 @@ export function Flashcard({ question, solution }: FlashcardProps) {
           className="absolute w-full h-full"
         >
            <Card className="w-full h-full flex flex-col justify-between bg-secondary">
-            <CardContent className="p-6 flex-1 flex items-center justify-center">
-                <ScrollArea className="h-[220px]">
-                    <p className="text-center text-md font-code whitespace-pre-wrap">{solution}</p>
+            <CardContent className="p-6 flex-1 flex flex-col justify-center">
+                <ScrollArea className="h-[220px] w-full">
+                   <div className="text-md font-code whitespace-pre-wrap">
+                     <MarkdownRenderer content={solution} />
+                   </div>
                 </ScrollArea>
             </CardContent>
              <div className="p-4 border-t flex justify-end">

@@ -1,16 +1,15 @@
 'use client';
 
 import React from 'react';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { BlockMath, InlineMath } from 'react-katex';
 
 interface MarkdownRendererProps {
   content: string;
 }
 
-export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
-  if (!content) {
-    return null;
-  }
-
+const PlainTextRenderer: React.FC<{ content: string }> = ({ content }) => {
   const lines = content.split('\n');
   const elements: React.ReactNode[] = [];
   let currentList: React.ReactNode[] = [];
@@ -26,7 +25,6 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) =
     const isListItem = line.trim().startsWith('* ') || line.trim().startsWith('- ');
 
     if (isListItem) {
-      // Assuming 2 spaces for indentation level
       const indentLevel = (line.match(/^\s*/)?.[0].length || 0) / 2;
       currentList.push(
         <li key={index} className="flex" style={{ marginLeft: `${indentLevel * 1.5}rem` }}>
@@ -45,8 +43,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) =
         elements.push(<h1 key={index} className="text-3xl font-bold tracking-tight mt-8 mb-4">{line.substring(2)}</h1>);
       } else if (line.trim() !== '') {
         elements.push(<p key={index} className="my-2 leading-relaxed">{line}</p>);
-      } else if (elements.length > 0 && lines[index - 1]?.trim() !== '') {
-        // Respect empty lines for spacing, but don't add too many
+      } else if (elements.length > 0) {
         elements.push(<div key={index} className="h-4" />);
       }
     }
@@ -54,5 +51,49 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) =
 
   flushList(`ul-${lines.length}`);
 
-  return <div className="text-foreground">{elements}</div>;
+  return <>{elements}</>;
+};
+
+
+export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
+  if (!content) {
+    return null;
+  }
+
+  const parts = content.split(/(```(?:[a-z]+)?\n[\s\S]*?\n```|\$\$[\s\S]*?\$\$|\$[^\$\n]*?\$)/g).filter(Boolean);
+
+  return (
+    <div className="text-foreground">
+      {parts.map((part, index) => {
+        if (part.startsWith('```')) {
+          const langMatch = part.match(/^```([a-z]+)?\n/);
+          const language = langMatch?.[1] || 'text';
+          const code = part.replace(/^```[a-z]*\n/, '').replace(/\n```$/, '');
+          return (
+            <div key={index} className="my-4 text-left">
+              <SyntaxHighlighter language={language} style={oneDark} PreTag="div" customStyle={{ borderRadius: '0.5rem' }}>
+                {code}
+              </SyntaxHighlighter>
+            </div>
+          );
+        }
+
+        if (part.startsWith('$$') && part.endsWith('$$')) {
+          const math = part.substring(2, part.length - 2);
+          return (
+            <div key={index} className="flex justify-center font-bold my-4 text-lg">
+              <BlockMath math={math} />
+            </div>
+          );
+        }
+
+        if (part.startsWith('$') && part.endsWith('$')) {
+            const math = part.substring(1, part.length - 1);
+            return <InlineMath key={index} math={math} />;
+        }
+
+        return <PlainTextRenderer key={index} content={part} />;
+      })}
+    </div>
+  );
 };
