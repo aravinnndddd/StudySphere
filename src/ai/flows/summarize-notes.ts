@@ -35,7 +35,7 @@ const prompt = ai.definePrompt({
 
 Your job is to read through the provided study material or class notes and generate a clear, structured summary that is:
 - Easy to understand for students of all levels
-- Organized in bullet points using dashes (-)
+- Organized in bullet points
 - Includes key concepts and important formulas
 - Mentions external references or study materials if needed
 - Keeps the tone concise, helpful, and student-friendly
@@ -44,19 +44,19 @@ Your job is to read through the provided study material or class notes and gener
 {{{notes}}}
 === NOTES END ===
 
-Format your response as plain text, without any markdown like ** or ##. Use this exact format:
+Format your response exactly like this:
 
-📌 Key Concepts:
+📌 **Key Concepts:**
 - Point 1
 - Point 2
 - ...
 
-🧮 Important Formulas:
+🧮 **Important Formulas:**
 - Formula Name: Formula here (with explanation if needed)
 - ...
 
-🔗 References (if any):
-- Title (link) – short description
+🔗 **References (if any):**
+- [Title](link) – short description
 
 Make sure the summary is not too long and avoids repeating the original text. Focus on clarity, structure, and helpfulness.`,
 });

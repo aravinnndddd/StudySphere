@@ -35,13 +35,13 @@ const prompt = ai.definePrompt({
 
 Please follow these formatting rules carefully:
 - Write in a friendly, academic tone.
-- 📘 Organize the content with clear section titles. Do not use markdown headings (like ##). Use plain text for titles.
+- 📘Organize the content with clear markdown headings and subheadings (e.g., ## Section, ### Subsection).
+- Use bold text for emphasis on key terms.
 - Group related points under descriptive section titles.
 - Explain concepts clearly. Avoid overly technical jargon where possible.
-- Use bullet points or numbered lists sparingly, using simple dashes (-) when it enhances clarity (e.g., for steps in a process or a list of examples).
-- ✅ Use emojis like 💡, ✅, and 📘 to add visual interest and highlight key information.
+- Use bullet points or numbered lists (using dashes - or numbers 1.) when it enhances clarity.
+- You may use emojis to add visual interest.
 - End each major section with a concise summary or a practical study tip.
-- Ensure the final output is clean and easy to read, without any markdown, JSON or code-like formatting.
 
 Summarized Notes to expand into a study guide:
 {{{summarizedNotes}}}`,

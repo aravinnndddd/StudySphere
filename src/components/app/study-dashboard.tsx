@@ -123,7 +123,9 @@ export function StudyDashboard({ isLoading, data }: StudyDashboardProps) {
                                 {`Q${i + 1}: ${q.question}`}
                                 </AccordionTrigger>
                                 <AccordionContent className="space-y-4">
-                                    <p className="whitespace-pre-wrap text-base font-code">{q.solution}</p>
+                                    <div className="text-base">
+                                      <MarkdownRenderer content={q.solution} />
+                                    </div>
                                     {q.source && (
                                         <a href={q.source} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
                                             Source

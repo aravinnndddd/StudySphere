@@ -40,7 +40,7 @@ const questionPrompt = ai.definePrompt({
 
 For each question, you will also provide a detailed solution. When writing the solution, please follow these guidelines:
 - Adopt a friendly and academic tone, like a teacher explaining the answer step-by-step.
-- Explain the reasoning clearly in well-structured paragraphs. Do not use markdown headings or bolding.
+- Explain the reasoning clearly. You can use markdown for formatting, like **bold** for emphasis, and lists for steps.
 - When providing code examples, enclose them in markdown code fences with the language identifier (e.g., \`\`\`javascript ... \`\`\`).
 - For mathematical formulas, use LaTeX syntax enclosed in double dollar signs for blocks (e.g., $$ E=mc^2 $$) or single dollar signs for inline math (e.g., $ y = mx + b $).
 - If possible, extract the solution from a credible online source and provide the source URL.

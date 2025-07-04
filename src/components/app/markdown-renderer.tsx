@@ -1,93 +1,63 @@
 'use client';
 
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { BlockMath, InlineMath } from 'react-katex';
+import 'katex/dist/katex.min.css';
 
 interface MarkdownRendererProps {
   content: string;
 }
-
-const PlainTextRenderer: React.FC<{ content: string }> = ({ content }) => {
-  const lines = content.split('\n');
-  const elements: React.ReactNode[] = [];
-  let currentList: React.ReactNode[] = [];
-
-  const flushList = (key: string) => {
-    if (currentList.length > 0) {
-      elements.push(<ul key={key} className="space-y-2 my-4">{currentList}</ul>);
-      currentList = [];
-    }
-  };
-
-  lines.forEach((line, index) => {
-    const isListItem = line.trim().startsWith('* ') || line.trim().startsWith('- ');
-
-    if (isListItem) {
-      const indentLevel = (line.match(/^\s*/)?.[0].length || 0) / 2;
-      currentList.push(
-        <li key={index} className="flex" style={{ marginLeft: `${indentLevel * 1.5}rem` }}>
-          <span className="mr-2 mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-primary" />
-          <span className="flex-1">{line.trim().substring(2)}</span>
-        </li>
-      );
-    } else {
-      flushList(`ul-${index - 1}`);
-
-      if (line.trim() !== '') {
-        elements.push(<p key={index} className="my-2 leading-relaxed">{line}</p>);
-      } else if (elements.length > 0) {
-        elements.push(<div key={index} className="h-4" />);
-      }
-    }
-  });
-
-  flushList(`ul-${lines.length}`);
-
-  return <>{elements}</>;
-};
-
 
 export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
   if (!content) {
     return null;
   }
 
-  const parts = content.split(/(```(?:[a-z]+)?\n[\s\S]*?\n```|\$\$[\s\S]*?\$\$|\$[^\$\n]*?\$)/g).filter(Boolean);
-
   return (
-    <div className="text-foreground">
-      {parts.map((part, index) => {
-        if (part.startsWith('```')) {
-          const langMatch = part.match(/^```([a-z]+)?\n/);
-          const language = langMatch?.[1] || 'text';
-          const code = part.replace(/^```[a-z]*\n/, '').replace(/\n```$/, '');
-          return (
-            <div key={index} className="my-4 text-left">
-              <SyntaxHighlighter language={language} style={oneDark} PreTag="div" customStyle={{ borderRadius: '0.5rem' }}>
-                {code}
-              </SyntaxHighlighter>
-            </div>
-          );
-        }
-
-        if (part.startsWith('$$') && part.endsWith('$$')) {
-          const math = part.substring(2, part.length - 2);
-          return (
-            <div key={index} className="flex justify-center font-bold my-4 text-lg">
-              <BlockMath math={math} />
-            </div>
-          );
-        }
-
-        if (part.startsWith('$') && part.endsWith('$')) {
-            const math = part.substring(1, part.length - 1);
-            return <span key={index} className="font-bold"><InlineMath math={math} /></span>;
-        }
-
-        return <PlainTextRenderer key={index} content={part} />;
-      })}
+    <div className="markdown-renderer text-foreground">
+      <ReactMarkdown
+        remarkPlugins={[remarkMath]}
+        rehypePlugins={[rehypeKatex]}
+        components={{
+          h1: ({node, ...props}) => <h1 className="text-3xl font-bold my-4" {...props} />,
+          h2: ({node, ...props}) => <h2 className="text-2xl font-bold my-3 border-b pb-2" {...props} />,
+          h3: ({node, ...props}) => <h3 className="text-xl font-bold my-2" {...props} />,
+          p: ({node, ...props}) => <p className="my-2 leading-relaxed" {...props} />,
+          ul: ({node, ...props}) => <ul className="list-none p-0 my-4 space-y-2" {...props} />,
+          li: ({ node, children, ...props }) => (
+            <li className="flex items-start" {...props}>
+                <span className="mr-3 mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-primary" />
+                <span className="flex-1">{children}</span>
+            </li>
+          ),
+          code({ node, className, children, ...props }) {
+            const match = /language-(\w+)/.exec(className || '');
+            return match ? (
+              <div className="my-4 text-left">
+                <SyntaxHighlighter
+                  language={match[1]}
+                  style={oneDark}
+                  PreTag="div"
+                  customStyle={{ borderRadius: '0.5rem', margin: 0, padding: '1rem' }}
+                  {...props}
+                >
+                  {String(children).replace(/\n$/, '')}
+                </SyntaxHighlighter>
+              </div>
+            ) : (
+              <code className="font-code bg-muted text-foreground px-1.5 py-1 rounded-md" {...props}>
+                {children}
+              </code>
+            );
+          },
+        }}
+      >
+        {content}
+      </ReactMarkdown>
     </div>
   );
 };
