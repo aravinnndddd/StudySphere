@@ -89,7 +89,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) =
 
         if (part.startsWith('$') && part.endsWith('$')) {
             const math = part.substring(1, part.length - 1);
-            return <InlineMath key={index} math={math} />;
+            return <span key={index} className="font-bold"><InlineMath math={math} /></span>;
         }
 
         return <PlainTextRenderer key={index} content={part} />;
