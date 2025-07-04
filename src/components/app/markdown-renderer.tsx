@@ -35,13 +35,7 @@ const PlainTextRenderer: React.FC<{ content: string }> = ({ content }) => {
     } else {
       flushList(`ul-${index - 1}`);
 
-      if (line.startsWith('## ')) {
-        elements.push(<h2 key={index} className="text-2xl font-semibold tracking-tight mt-6 mb-3 border-b pb-2">{line.substring(3)}</h2>);
-      } else if (line.startsWith('### ')) {
-        elements.push(<h3 key={index} className="text-xl font-semibold tracking-tight mt-4 mb-2">{line.substring(4)}</h3>);
-      } else if (line.startsWith('# ')) {
-        elements.push(<h1 key={index} className="text-3xl font-bold tracking-tight mt-8 mb-4">{line.substring(2)}</h1>);
-      } else if (line.trim() !== '') {
+      if (line.trim() !== '') {
         elements.push(<p key={index} className="my-2 leading-relaxed">{line}</p>);
       } else if (elements.length > 0) {
         elements.push(<div key={index} className="h-4" />);
