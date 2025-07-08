@@ -1,18 +1,22 @@
 'use client';
 
 import { useState } from 'react';
-import { BrainCircuit, BookOpen, Sparkles } from 'lucide-react';
+import { BrainCircuit, BookOpen, Sparkles, LogIn } from 'lucide-react';
 
 import { NoteInputForm } from '@/components/app/note-input-form';
 import { StudyDashboard } from '@/components/app/study-dashboard';
 import { generateStudyPlan } from '@/app/actions';
 import type { StudyPlan } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [studyPlan, setStudyPlan] = useState<StudyPlan | null>(null);
   const { toast } = useToast();
+  const { user, signInWithGoogle, isFirebaseEnabled } = useAuth();
 
   const handleGenerate = async (summary: string, fullNotes: string) => {
     setIsLoading(true);
@@ -65,7 +69,38 @@ export default function Home() {
           </div>
         </div>
 
-        <NoteInputForm onSubmit={handleGenerate} isLoading={isLoading} />
+        {user ? (
+          <NoteInputForm onSubmit={handleGenerate} isLoading={isLoading} />
+        ) : (
+          <Card className="w-full max-w-4xl mx-auto shadow-lg border-primary/20 text-center">
+            <CardContent className="p-10">
+              {isFirebaseEnabled ? (
+                 <>
+                    <h3 className="text-xl font-semibold mb-4">Please sign in to continue</h3>
+                    <p className="text-muted-foreground mb-6">
+                      Sign in with your Google account to start creating your personalized study plans.
+                    </p>
+                    <Button onClick={signInWithGoogle} size="lg">
+                      <LogIn className="mr-2 h-5 w-5" />
+                      Sign In with Google
+                    </Button>
+                  </>
+              ) : (
+                <>
+                  <h3 className="text-xl font-semibold mb-4">Firebase Not Configured</h3>
+                  <p className="text-muted-foreground mb-6">
+                    To enable user sign-in, please add your Firebase project credentials to the{' '}
+                    <code className="font-code bg-muted px-1.5 py-0.5 rounded-sm">.env</code> file.
+                  </p>
+                  <Button size="lg" disabled>
+                    <LogIn className="mr-2 h-5 w-5" />
+                    Sign In with Google
+                  </Button>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
