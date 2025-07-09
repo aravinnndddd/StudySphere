@@ -37,12 +37,7 @@ export function HistorySidebarContent() {
   return (
     <>
       <SidebarHeader>
-        <div className="flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <BrainCircuit className="h-6 w-6 text-primary" />
-            <span className="text-xl font-semibold text-foreground">StudySphere</span>
-          </Link>
-        </div>
+      
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>

@@ -41,6 +41,8 @@ export function addHistoryItem(plan: StudyPlan): HistoryItem {
   // Create a title from the first line of the summary's key concepts
   const keyConceptsMatch = plan.summary.summary.match(/📌 \*\*Key Concepts:\*\*\s*\n-\s*(.*)/);
   let title = keyConceptsMatch ? keyConceptsMatch[1] : 'New Study Plan';
+  // Strip markdown from title
+  title = title.replace(/(\*\*|__|\*|_|`|#)/g, '');
   title = title.length > 50 ? title.substring(0, 47) + '...' : title;
 
 
