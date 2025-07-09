@@ -7,3 +7,10 @@ export type StudyPlan = {
   studyGuide: GenerateStudyGuideOutput;
   questions: GenerateApplicationQuestionsOutput;
 };
+
+export type HistoryItem = {
+  id: string;
+  title: string;
+  timestamp: number;
+  plan: StudyPlan;
+};

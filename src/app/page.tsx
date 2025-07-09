@@ -1,42 +1,38 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { BrainCircuit, BookOpen, Sparkles, LogIn } from 'lucide-react';
 
 import { NoteInputForm } from '@/components/app/note-input-form';
-import { StudyDashboard } from '@/components/app/study-dashboard';
 import { generateStudyPlan } from '@/app/actions';
-import type { StudyPlan } from '@/lib/types';
+import { addHistoryItem } from '@/lib/history-storage';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
 export default function Home() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [studyPlan, setStudyPlan] = useState<StudyPlan | null>(null);
+  const router = useRouter();
   const { toast } = useToast();
   const { user, signInWithGoogle, isFirebaseEnabled } = useAuth();
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const handleGenerate = async (summary: string, fullNotes: string) => {
-    setIsLoading(true);
-    setStudyPlan(null);
+    setIsGenerating(true);
     const result = await generateStudyPlan({ fullNotes, summary });
     if (result.success && result.data) {
-      setStudyPlan(result.data);
+      const historyItem = addHistoryItem(result.data);
+      router.push(`/plan/${historyItem.id}`);
     } else {
       toast({
         variant: 'destructive',
         title: 'An error occurred',
         description: result.error || 'Unable to generate study plan.',
       });
+      setIsGenerating(false);
     }
-    setIsLoading(false);
   };
-
-  if (isLoading || studyPlan) {
-    return <StudyDashboard isLoading={isLoading} data={studyPlan} />;
-  }
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 bg-grid-white/[0.05] relative">
@@ -70,7 +66,7 @@ export default function Home() {
         </div>
 
         {user ? (
-          <NoteInputForm onSubmit={handleGenerate} isLoading={isLoading} />
+          <NoteInputForm onSubmit={handleGenerate} isLoading={isGenerating} />
         ) : (
           <Card className="w-full max-w-4xl mx-auto shadow-lg border-primary/20 text-center">
             <CardContent className="p-10">
