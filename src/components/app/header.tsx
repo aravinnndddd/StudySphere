@@ -1,6 +1,6 @@
 'use client';
 
-import { LogIn, LogOut } from 'lucide-react';
+import { LogIn, LogOut, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -29,9 +29,7 @@ export function Header() {
 
   return (
     <header className="px-4 lg:px-6 h-16 flex items-center border-b bg-background sticky top-0 z-40">
-      <div className="md:hidden">
-        <SidebarTrigger />
-      </div>
+      <SidebarTrigger />
       <div className="ml-auto flex items-center gap-4">
         {user ? (
           <DropdownMenu>
