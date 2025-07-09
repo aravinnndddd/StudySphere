@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useState, useEffect, ReactNode } from 'react';
-import { User, onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut } from 'firebase/auth';
+import { User, onAuthStateChanged, signInWithRedirect, getRedirectResult, signOut as firebaseSignOut } from 'firebase/auth';
 import { auth, googleProvider, isFirebaseEnabled } from '@/lib/firebase';
 import { LoaderCircle } from 'lucide-react';
 
@@ -24,10 +24,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       return;
     }
+
+    // This handles the redirect result from Google Sign-In.
+    // It's called when the page loads to see if the user has just been redirected back.
+    getRedirectResult(auth)
+      .catch((error) => {
+        console.error("Error processing redirect result", error);
+      });
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
     });
+    
     return () => unsubscribe();
   }, []);
 
@@ -37,7 +46,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     try {
-      await signInWithPopup(auth, googleProvider);
+      // We use signInWithRedirect instead of a popup.
+      // This is more robust in different environments.
+      await signInWithRedirect(auth, googleProvider);
     } catch (error) {
       console.error('Error signing in with Google', error);
     }
