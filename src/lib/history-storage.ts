@@ -35,20 +35,14 @@ function saveHistory(history: HistoryItem[]): void {
   }
 }
 
-export function addHistoryItem(plan: StudyPlan): HistoryItem {
+export function addHistoryItem(plan: StudyPlan, title: string): HistoryItem {
   const history = getHistory();
   
-  // Create a title from the first line of the summary's key concepts
-  const keyConceptsMatch = plan.summary.summary.match(/📌 \*\*Key Concepts:\*\*\s*\n-\s*(.*)/);
-  let title = keyConceptsMatch ? keyConceptsMatch[1] : 'New Study Plan';
-  // Strip markdown from title
-  title = title.replace(/(\*\*|__|\*|_|`|#)/g, '');
-  title = title.length > 50 ? title.substring(0, 47) + '...' : title;
-
+  const finalTitle = title.trim().length > 50 ? title.trim().substring(0, 47) + '...' : title.trim();
 
   const newItem: HistoryItem = {
     id: uuidv4(),
-    title: title,
+    title: finalTitle || 'New Study Plan',
     timestamp: Date.now(),
     plan: plan,
   };

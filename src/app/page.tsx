@@ -11,28 +11,68 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import type { StudyPlan } from '@/lib/types';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription, 
+  DialogFooter 
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function Home() {
   const router = useRouter();
   const { toast } = useToast();
   const { user, signInWithGoogle, isFirebaseEnabled } = useAuth();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedPlan, setGeneratedPlan] = useState<StudyPlan | null>(null);
+  const [planName, setPlanName] = useState('');
 
   const handleGenerate = async (summary: string, fullNotes: string) => {
     setIsGenerating(true);
     const result = await generateStudyPlan({ fullNotes, summary });
+    setIsGenerating(false);
+
     if (result.success && result.data) {
-      const historyItem = addHistoryItem(result.data);
-      router.push(`/plan/${historyItem.id}`);
+      // Generate a default title from the summary
+      const keyConceptsMatch = result.data.summary.summary.match(/📌 \*\*Key Concepts:\*\*\s*\n-\s*(.*)/);
+      let defaultTitle = keyConceptsMatch ? keyConceptsMatch[1] : 'New Study Plan';
+      defaultTitle = defaultTitle.replace(/(\*\*|__|\*|_|`|#)/g, '');
+      defaultTitle = defaultTitle.length > 50 ? defaultTitle.substring(0, 47) + '...' : defaultTitle;
+
+      setPlanName(defaultTitle);
+      setGeneratedPlan(result.data);
     } else {
       toast({
         variant: 'destructive',
         title: 'An error occurred',
         description: result.error || 'Unable to generate study plan.',
       });
-      setIsGenerating(false);
     }
   };
+
+  const handleSavePlan = () => {
+    if (!generatedPlan || !planName.trim()) {
+      toast({
+        variant: 'destructive',
+        title: 'Invalid Name',
+        description: 'Please enter a name for your study plan.',
+      });
+      return;
+    }
+    const historyItem = addHistoryItem(generatedPlan, planName);
+    setGeneratedPlan(null); // Close the dialog
+    router.push(`/plan/${historyItem.id}`);
+  };
+
+  const handleModalOpenChange = (open: boolean) => {
+    if (!open) {
+      setGeneratedPlan(null);
+    }
+  }
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 bg-grid-white/[0.05] relative">
@@ -98,6 +138,38 @@ export default function Home() {
           </Card>
         )}
       </div>
+
+      <Dialog open={!!generatedPlan} onOpenChange={handleModalOpenChange}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Name Your Study Plan</DialogTitle>
+            <DialogDescription>
+              Give your new study plan a name to save it to your history.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="plan-name" className="text-right">
+                Name
+              </Label>
+              <Input
+                id="plan-name"
+                value={planName}
+                onChange={(e) => setPlanName(e.target.value)}
+                className="col-span-3"
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                        handleSavePlan();
+                    }
+                }}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleSavePlan}>Save and View Plan</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
