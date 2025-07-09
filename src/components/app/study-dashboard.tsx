@@ -84,20 +84,20 @@ export function StudyDashboard({ isLoading, data }: StudyDashboardProps) {
                 {!isLoading && data && (
                     <>
                     <TabsContent value="summary">
-                        <ScrollArea className="h-[60vh] rounded-md border p-6">
+                        <ScrollArea className="max-h-[60vh] rounded-md border p-6">
                             <MarkdownRenderer content={data.summary.summary} />
                         </ScrollArea>
                         <Feedback />
                     </TabsContent>
 
                     <TabsContent value="study-guide">
-                        <ScrollArea className="h-[60vh] rounded-md border p-6">
+                        <ScrollArea className="max-h-[60vh] rounded-md border p-6">
                             <MarkdownRenderer content={data.studyGuide.studyGuide} />
                         </ScrollArea>
                         <Feedback />
                     </TabsContent>
 
-                    <TabsContent value="flashcards" className="flex flex-col items-center justify-center h-[60vh]">
+                    <TabsContent value="flashcards" className="flex flex-col items-center justify-center min-h-[450px]">
                         <Carousel className="w-full max-w-md">
                         <CarouselContent>
                             {data.questions.questions.map((q, i) => (
@@ -115,7 +115,7 @@ export function StudyDashboard({ isLoading, data }: StudyDashboardProps) {
                     </TabsContent>
 
                     <TabsContent value="practice">
-                        <ScrollArea className="h-[60vh] pr-4">
+                        <ScrollArea className="max-h-[60vh] pr-4">
                         <Accordion type="single" collapsible className="w-full">
                             {data.questions.questions.map((q, i) => (
                             <AccordionItem value={`item-${i}`} key={i}>

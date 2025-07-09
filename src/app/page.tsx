@@ -1,29 +1,50 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { BrainCircuit, BookOpen, Sparkles, LogIn } from 'lucide-react';
 
 import { NoteInputForm } from '@/components/app/note-input-form';
-import { StudyDashboard } from '@/components/app/study-dashboard';
 import { generateStudyPlan } from '@/app/actions';
-import type { StudyPlan } from '@/lib/types';
+import { addHistoryItem } from '@/lib/history-storage';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import type { StudyPlan } from '@/lib/types';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription, 
+  DialogFooter 
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function Home() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [studyPlan, setStudyPlan] = useState<StudyPlan | null>(null);
+  const router = useRouter();
   const { toast } = useToast();
   const { user, signInWithGoogle, isFirebaseEnabled } = useAuth();
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedPlan, setGeneratedPlan] = useState<StudyPlan | null>(null);
+  const [planName, setPlanName] = useState('');
 
   const handleGenerate = async (summary: string, fullNotes: string) => {
-    setIsLoading(true);
-    setStudyPlan(null);
+    setIsGenerating(true);
     const result = await generateStudyPlan({ fullNotes, summary });
+    setIsGenerating(false);
+
     if (result.success && result.data) {
-      setStudyPlan(result.data);
+      // Generate a default title from the summary
+      const keyConceptsMatch = result.data.summary.summary.match(/📌 \*\*Key Concepts:\*\*\s*\n-\s*(.*)/);
+      let defaultTitle = keyConceptsMatch ? keyConceptsMatch[1] : 'New Study Plan';
+      defaultTitle = defaultTitle.replace(/(\*\*|__|\*|_|`|#)/g, '');
+      defaultTitle = defaultTitle.length > 50 ? defaultTitle.substring(0, 47) + '...' : defaultTitle;
+
+      setPlanName(defaultTitle);
+      setGeneratedPlan(result.data);
     } else {
       toast({
         variant: 'destructive',
@@ -31,11 +52,26 @@ export default function Home() {
         description: result.error || 'Unable to generate study plan.',
       });
     }
-    setIsLoading(false);
   };
 
-  if (isLoading || studyPlan) {
-    return <StudyDashboard isLoading={isLoading} data={studyPlan} />;
+  const handleSavePlan = () => {
+    if (!generatedPlan || !planName.trim()) {
+      toast({
+        variant: 'destructive',
+        title: 'Invalid Name',
+        description: 'Please enter a name for your study plan.',
+      });
+      return;
+    }
+    const historyItem = addHistoryItem(generatedPlan, planName);
+    setGeneratedPlan(null); // Close the dialog
+    router.push(`/plan/${historyItem.id}`);
+  };
+
+  const handleModalOpenChange = (open: boolean) => {
+    if (!open) {
+      setGeneratedPlan(null);
+    }
   }
 
   return (
@@ -70,7 +106,7 @@ export default function Home() {
         </div>
 
         {user ? (
-          <NoteInputForm onSubmit={handleGenerate} isLoading={isLoading} />
+          <NoteInputForm onSubmit={handleGenerate} isLoading={isGenerating} />
         ) : (
           <Card className="w-full max-w-4xl mx-auto shadow-lg border-primary/20 text-center">
             <CardContent className="p-10">
@@ -102,6 +138,38 @@ export default function Home() {
           </Card>
         )}
       </div>
+
+      <Dialog open={!!generatedPlan} onOpenChange={handleModalOpenChange}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Name Your Study Plan</DialogTitle>
+            <DialogDescription>
+              Give your new study plan a name to save it to your history.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="plan-name" className="text-right">
+                Name
+              </Label>
+              <Input
+                id="plan-name"
+                value={planName}
+                onChange={(e) => setPlanName(e.target.value)}
+                className="col-span-3"
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                        handleSavePlan();
+                    }
+                }}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleSavePlan}>Save and View Plan</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
