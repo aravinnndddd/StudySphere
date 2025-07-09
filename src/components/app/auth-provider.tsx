@@ -1,9 +1,17 @@
 'use client';
 
 import { createContext, useState, useEffect, ReactNode } from 'react';
-import { User, onAuthStateChanged, signInWithRedirect, getRedirectResult, signOut as firebaseSignOut } from 'firebase/auth';
+import {
+  User,
+  onAuthStateChanged,
+  signInWithRedirect,
+  getRedirectResult,
+  signOut as firebaseSignOut,
+  FirebaseError,
+} from 'firebase/auth';
 import { auth, googleProvider, isFirebaseEnabled } from '@/lib/firebase';
 import { LoaderCircle } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 interface AuthContextType {
   user: User | null;
@@ -27,16 +35,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // This handles the redirect result from Google Sign-In.
     // It's called when the page loads to see if the user has just been redirected back.
-    getRedirectResult(auth)
-      .catch((error) => {
-        console.error("Error processing redirect result", error);
-      });
+    getRedirectResult(auth).catch((error: FirebaseError) => {
+      console.error('Error processing redirect result', error);
+      if (error.code === 'auth/unauthorized-domain') {
+        toast({
+          variant: 'destructive',
+          title: 'Sign-In Error: Domain Not Authorized',
+          description: (
+            <div className="flex flex-col gap-2">
+              <p>This domain is not authorized for authentication.</p>
+              <p>
+                Please add the following domain to the list of authorized
+                domains in your Firebase project settings:
+              </p>
+              <code className="font-code bg-muted px-2 py-1 rounded-sm text-sm">
+                {window.location.origin}
+              </code>
+            </div>
+          ),
+          duration: 20000,
+        });
+      }
+    });
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
     });
-    
+
     return () => unsubscribe();
   }, []);
 
@@ -75,7 +101,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signOut, isFirebaseEnabled }}>
+    <AuthContext.Provider
+      value={{ user, loading, signInWithGoogle, signOut, isFirebaseEnabled }}
+    >
       {children}
     </AuthContext.Provider>
   );
