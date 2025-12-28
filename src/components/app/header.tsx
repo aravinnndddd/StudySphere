@@ -1,6 +1,6 @@
 'use client';
-
-import { BrainCircuit, LogIn, LogOut } from 'lucide-react';
+import Link from 'next/link';
+import { BrainCircuit, LogIn, LogOut, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/use-auth';
+import { SidebarTrigger } from '../ui/sidebar';
 
 export function Header() {
   const { user, signInWithGoogle, signOut, isFirebaseEnabled } = useAuth();
@@ -27,12 +28,14 @@ export function Header() {
   };
 
   return (
-    <header className="px-4 lg:px-6 h-16 flex items-center border-b bg-background/50 backdrop-blur-sm sticky top-0 z-50">
-      <a className="flex items-center justify-center gap-2" href="/">
-        <BrainCircuit className="h-6 w-6 text-primary" />
-        <span className="text-xl font-semibold">StudySphere</span>
-      </a>
-
+    <header className="px-4 lg:px-6 h-16 flex items-center border-b bg-background sticky top-0 z-40">
+      <SidebarTrigger />
+      <div className="flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+          
+            <span className="text-xl font-semibold text-foreground">StudySphere</span>
+          </Link>
+        </div>
       <div className="ml-auto flex items-center gap-4">
         {user ? (
           <DropdownMenu>
@@ -61,7 +64,7 @@ export function Header() {
         ) : (
           <Button onClick={signInWithGoogle} disabled={!isFirebaseEnabled}>
             <LogIn className="mr-2 h-4 w-4" />
-            Sign In with Google
+            Sign In
           </Button>
         )}
       </div>
